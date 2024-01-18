@@ -45,11 +45,14 @@ echo "Jupyter Notebook安装完成，并已配置为开机自动启动。"
 # 安装 Nginx
 sudo apt install -y nginx
 
-# 配置 Nginx 将域名解析到 Jupyter Notebook 运行的端口
+# 提示用户输入自定义域名
+read -p "请输入您的自定义域名（例如，example.com）: " custom_domain
+
+# 配置 Nginx 将自定义域名解析到 Jupyter Notebook 运行的端口
 sudo bash -c 'cat > /etc/nginx/sites-available/jupyter' <<EOF
 server {
     listen 80;
-    server_name ju1.bestvgo.top;
+    server_name $custom_domain;
 
     location / {
         proxy_pass http://127.0.0.1:8888;
@@ -70,6 +73,7 @@ sudo ln -s /etc/nginx/sites-available/jupyter /etc/nginx/sites-enabled
 
 # 重启 Nginx 以应用更改
 sudo systemctl restart nginx
+
 
 #安装v2ray
 echo "安装v2ray"
