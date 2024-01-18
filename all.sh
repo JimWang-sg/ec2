@@ -82,7 +82,7 @@ echo 1 | bash <(curl -s -L https://raw.githubusercontent.com/JimWang-sg/v2ray/ma
 EOF
 
 #安装模块
-pip install pandas akshare matplotlib requests mplfinance websockets jupyterlab-language-pack-zh-CN python-okx jupyter_ai
+pip install pandas akshare matplotlib requests mplfinance websockets jupyterlab-language-pack-zh-CN python-okx jupyter_ai openai
 
 echo "脚本执行完毕。查询v2ray请输入：sudo v2ray url"
 
