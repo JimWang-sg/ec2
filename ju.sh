@@ -28,7 +28,7 @@ python - <<EOF
 from jupyter_server.auth import passwd
 import json
 
-password_hash = passwd('Jupyter@2024', algorithm='argon2')
+password_hash = passwd('ju2024', algorithm='argon2')
 config = {
     "ServerApp": {
         "password": password_hash,
@@ -84,4 +84,4 @@ echo -e "\n\033[32m[部署验证]\033[0m"
 echo -e "配置文件生成：$(ls -l $CONFIG_JSON)"
 echo -e "服务状态：$(systemctl is-active jupyter.service)"
 echo -e "\n\033[36m访问地址：http://$(curl -s ifconfig.me):8899"
-echo "登录密码：Jupyter@2024\033[0m"
+echo "登录密码：ju2024"
