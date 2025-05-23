@@ -79,5 +79,5 @@ sudo systemctl enable --now jupyter.service
 # 输出状态
 echo -e "\n\033[32m部署完成！服务状态：\033[0m"
 sudo systemctl status jupyter.service --no-pager
-echo -e "\n访问地址：http://$(curl -s ifconfig.me):8888"
-echo "登录密码：Jupyter@2024"
+echo -e "\n访问地址：http://$(curl -s ifconfig.me):8899"
+echo "登录密码：ju2024"
