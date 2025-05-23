@@ -1,5 +1,5 @@
 #!/bin/bash
-# Jupyter Lab 远程部署脚本 v5.0
+# Jupyter Lab 远程部署脚本 v5.1
 # 适配 Ubuntu 24.04 LTS | 交互式配置版
 # 生成日期：2025-05-23
 
@@ -62,8 +62,9 @@ validate_pass() {
     if [ -z "$1" ]; then
         echo -e "${RED}错误：密码不能为空${NC}"
         return 1
-    elif [ ${#1} -lt 4 ]; then
-        echo -e "${RED}警告：密码建议至少4位字符${NC}"
+    elif [ ${#1} -lt 8 ]; then
+        echo -e "${RED}错误：密码必须至少8位字符${NC}"
+        return 1
     fi
     return 0
 }
@@ -73,7 +74,7 @@ generate_config() {
     local port=$1
     local password=$2
     
-    python - <<EOF
+    python3 - <<EOF  # 明确使用python3解释器
 from jupyter_server.auth import passwd
 import json
 
@@ -195,24 +196,29 @@ uninstall_jupyter() {
 modify_config() {
     echo -e "\n${GREEN}>>> 修改配置参数${NC}"
     
+    # 激活虚拟环境
+    source "$VENV_PATH/bin/activate"
+    
     # 获取当前配置
     if [ ! -f $CONFIG_JSON ]; then
         echo -e "${RED}错误：未找到配置文件${NC}"
-        return
+        return 1
     fi
     
     local current_port=$(jq -r '.ServerApp.port' $CONFIG_JSON)
     local new_port=$(get_valid_input "输入新端口" $current_port validate_port)
     
-    # 密码修改需要二次确认
+    # 密码修改
     read -p "是否修改密码？[y/N] " -n 1 yn
     echo
     if [[ $yn =~ [yY] ]]; then
         local new_pass=$(get_valid_input "设置新密码" "" validate_pass)
-        generate_config $new_port $new_pass
     else
-        generate_config $new_port $DEFAULT_PASS
+        local new_pass=$(jq -r '.ServerApp.password' $CONFIG_JSON | awk -F: '{print $1}')
     fi
+    
+    # 生成新配置
+    generate_config $new_port $new_pass
     
     # 更新防火墙
     if [ $new_port -ne $current_port ]; then
@@ -221,7 +227,17 @@ modify_config() {
         sudo firewall-cmd --reload
     fi
     
+    # 重启服务
     sudo systemctl restart jupyter.service
+    echo -e "${BLUE}等待服务重启..." && sleep 3
+    
+    # 验证重启
+    systemctl is-active jupyter.service | grep -q "active" || {
+        echo -e "${RED}服务启动失败，请检查日志："
+        journalctl -u jupyter.service -n 50 --no-pager
+        exit 1
+    }
+    
     echo -e "${GREEN}✔ 配置已更新${NC}"
 }
 
