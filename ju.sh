@@ -1,6 +1,6 @@
 #!/bin/bash
-# Jupyter Lab 远程部署脚本 v5.4.1
-# 修复防火墙端口管理问题 | 发布日期：2025-05-24
+# Jupyter Lab 远程部署脚本 v5.4.1修改版
+# 移除所有防火墙配置操作 | 发布日期：2025-05-24
 
 set -eo pipefail
 
@@ -113,7 +113,7 @@ with open("$CONFIG_JSON", "w") as f:
 EOF
 }
 
-# 安装流程（修复防火墙管理）
+# 安装流程（移除了防火墙配置）
 install_jupyter() {
     echo -e "\n${GREEN}>>> 开始安装流程${NC}"
     
@@ -122,7 +122,7 @@ install_jupyter() {
     
     echo -e "${BLUE}正在更新系统包...${NC}"
     sudo apt update && sudo apt upgrade -y
-    sudo apt install -y python3.12 python3.12-venv firewalld
+    sudo apt install -y python3.12 python3.12-venv  # 移除了firewalld安装
     
     echo -e "${BLUE}创建Python虚拟环境...${NC}"
     python3.12 -m venv "$VENV_PATH"
@@ -139,11 +139,6 @@ install_jupyter() {
     echo "$pass" > "$PASSWORD_FILE"
     chmod 600 "$PASSWORD_FILE"
     mkdir -p "$HOME/jupyter_workspace"
-    
-    # 防火墙配置（仅添加新端口）
-    echo -e "${BLUE}配置防火墙...${NC}"
-    sudo firewall-cmd --permanent --add-port=$port/tcp
-    sudo firewall-cmd --reload
     
     echo -e "${BLUE}创建系统服务...${NC}"
     sudo tee $SERVICE_FILE > /dev/null <<EOL
@@ -173,15 +168,9 @@ EOL
     show_access_info
 }
 
-# 卸载流程（精确移除端口）
+# 卸载流程（移除了防火墙清理）
 uninstall_jupyter() {
     echo -e "\n${YELLOW}>>> 开始卸载流程${NC}"
-    
-    # 动态获取当前端口
-    local current_port=$DEFAULT_PORT
-    if [ -f $CONFIG_JSON ]; then
-        current_port=$(jq -r '.ServerApp.port' $CONFIG_JSON)
-    fi
     
     read -p "确定要完全卸载吗？[y/N] " -n 1 confirm
     echo
@@ -191,11 +180,6 @@ uninstall_jupyter() {
     sudo systemctl stop jupyter.service 2>/dev/null || true
     sudo systemctl disable jupyter.service 2>/dev/null || true
     
-    # 精确移除防火墙规则
-    echo -e "${BLUE}清理防火墙规则...${NC}"
-    sudo firewall-cmd --permanent --remove-port=${current_port}/tcp
-    sudo firewall-cmd --reload
-    
     echo -e "${BLUE}删除相关文件...${NC}"
     sudo rm -f $SERVICE_FILE
     rm -rf $VENV_PATH $CONFIG_DIR "$PASSWORD_FILE"
@@ -203,7 +187,7 @@ uninstall_jupyter() {
     echo -e "${GREEN}✔ 卸载完成${NC}"
 }
 
-# 修改配置（不再移除旧端口）
+# 修改配置（移除了防火墙更新）
 modify_config() {
     echo -e "\n${GREEN}>>> 修改配置参数${NC}"
     source "$VENV_PATH/bin/activate"
@@ -229,12 +213,6 @@ modify_config() {
     fi
     
     generate_config $new_port $new_pass
-    
-    # 仅添加新端口到防火墙
-    if [ $new_port -ne $current_port ]; then
-        sudo firewall-cmd --permanent --add-port=$new_port/tcp
-        sudo firewall-cmd --reload
-    fi
     
     sudo systemctl restart jupyter.service
     echo -e "${BLUE}等待服务重启..." && sleep 3
