@@ -1,5 +1,5 @@
 #!/bin/bash
-# Jupyter Lab 远程部署脚本 v5.1
+# Jupyter Lab 远程部署脚本 v5.3
 # 适配 Ubuntu 24.04 LTS | 交互式配置版
 # 生成日期：2025-05-23
 
@@ -9,6 +9,7 @@ set -eo pipefail
 VENV_PATH="$HOME/jupyter_venv"
 CONFIG_DIR="$HOME/.jupyter"
 CONFIG_JSON="$CONFIG_DIR/jupyter_server_config.json"
+PASSWORD_FILE="$CONFIG_DIR/password.txt"  # 新增密码存储文件
 SERVICE_FILE="/etc/systemd/system/jupyter.service"
 DEFAULT_PORT=8899
 DEFAULT_PASS="ju2024"
@@ -57,7 +58,7 @@ validate_port() {
     fi
 }
 
-# 密码验证
+# 密码验证（8位最小长度）
 validate_pass() {
     if [ -z "$1" ]; then
         echo -e "${RED}错误：密码不能为空${NC}"
@@ -74,7 +75,7 @@ generate_config() {
     local port=$1
     local password=$2
     
-    python3 - <<EOF  # 明确使用python3解释器
+    python3 - <<EOF
 from jupyter_server.auth import passwd
 import json
 
@@ -125,6 +126,12 @@ install_jupyter() {
     echo -e "${BLUE}生成配置文件...${NC}"
     mkdir -p "$CONFIG_DIR"
     generate_config $port $pass
+    
+    # 存储明文密码（新增核心功能）
+    echo "$pass" > "$PASSWORD_FILE"
+    chmod 600 "$PASSWORD_FILE"
+    
+    # 创建工作目录
     mkdir -p "$HOME/jupyter_workspace"
     
     # 配置系统服务
@@ -187,7 +194,7 @@ uninstall_jupyter() {
     sudo rm -f $SERVICE_FILE
     sudo firewall-cmd --permanent --remove-port=${current_port}/tcp
     sudo firewall-cmd --reload
-    rm -rf $VENV_PATH $CONFIG_DIR
+    rm -rf $VENV_PATH $CONFIG_DIR "$PASSWORD_FILE"
     
     echo -e "${GREEN}✔ 卸载完成${NC}"
 }
@@ -208,13 +215,17 @@ modify_config() {
     local current_port=$(jq -r '.ServerApp.port' $CONFIG_JSON)
     local new_port=$(get_valid_input "输入新端口" $current_port validate_port)
     
-    # 密码修改
+    # 密码修改处理
     read -p "是否修改密码？[y/N] " -n 1 yn
     echo
     if [[ $yn =~ [yY] ]]; then
         local new_pass=$(get_valid_input "设置新密码" "" validate_pass)
+        # 更新密码文件
+        echo "$new_pass" > "$PASSWORD_FILE"
+        chmod 600 "$PASSWORD_FILE"
     else
-        local new_pass=$(jq -r '.ServerApp.password' $CONFIG_JSON | awk -F: '{print $1}')
+        # 保留现有密码
+        local new_pass=$(cat "$PASSWORD_FILE")
     fi
     
     # 生成新配置
@@ -231,7 +242,7 @@ modify_config() {
     sudo systemctl restart jupyter.service
     echo -e "${BLUE}等待服务重启..." && sleep 3
     
-    # 验证重启
+    # 验证重启状态
     systemctl is-active jupyter.service | grep -q "active" || {
         echo -e "${RED}服务启动失败，请检查日志："
         journalctl -u jupyter.service -n 50 --no-pager
@@ -247,14 +258,21 @@ show_status() {
     systemctl status jupyter.service --no-pager || echo -e "${RED}服务未运行${NC}"
 }
 
-# 访问信息
+# 访问信息显示（已修复）
 show_access_info() {
     if [ -f $CONFIG_JSON ]; then
         local port=$(jq -r '.ServerApp.port' $CONFIG_JSON)
         local public_ip=$(curl -s ifconfig.me)
-        echo -e "\n${GREEN}访问信息："
-        echo "URL: http://${public_ip}:${port}"
-        echo -e "密码: $(jq -r '.ServerApp.password' $CONFIG_JSON | awk -F: '{print $1}')${NC}"
+        
+        # 从密码文件读取
+        if [ -f "$PASSWORD_FILE" ]; then
+            local password=$(cat "$PASSWORD_FILE")
+            echo -e "\n${GREEN}访问信息："
+            echo "URL: http://${public_ip}:${port}"
+            echo -e "密码: ${GREEN}${password}${NC}"
+        else
+            echo -e "${RED}错误：密码文件丢失，请重新配置${NC}"
+        fi
     else
         echo -e "${RED}未找到配置信息${NC}"
     fi
