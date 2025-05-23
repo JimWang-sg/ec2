@@ -75,26 +75,45 @@ generate_jupyter_config() {
     local port=$1
     local password=$2
 
+    # 添加参数验证
+    [[ -n "$port" && "$port" =~ ^[0-9]+$ ]] || {
+        echo -e "${RED}错误：端口号无效${NC}" >&2
+        return 1
+    }
+    [[ -n "$password" ]] || {
+        echo -e "${RED}错误：密码不能为空${NC}" >&2
+        return 1
+    }
+
     python3 - <<EOF
 from jupyter_server.auth import passwd
 import json
 
-hashed_pass = passwd('$password', algorithm='sha256')
-config = {
-    "ServerApp": {
-        "password": hashed_pass,
-        "ip": "0.0.0.0",
-        "port": $port,
-        "root_dir": "$HOME/jupyter_workspace",
-        "allow_root": True
-    },
-    "KernelSpecManager": {
-        "whitelist": ["python3"]
+try:
+    # 生成密码哈希
+    hashed_pass = passwd('$password', algorithm='sha256')
+    
+    # 构建配置字典
+    config = {
+        "ServerApp": {
+            "password": hashed_pass,
+            "ip": "0.0.0.0",
+            "port": $port,  # 确保端口是整数
+            "root_dir": "$HOME/jupyter_workspace",
+            "allow_root": True
+        },
+        "KernelSpecManager": {
+            "whitelist": ["python3"]
+        }
     }
-}
 
-with open("$CONFIG_JSON", "w") as f:
-    json.dump(config, f, indent=4)
+    # 写入配置文件
+    with open("$CONFIG_JSON", "w") as f:
+        json.dump(config, f, indent=4)
+        
+except Exception as e:
+    print(f"配置生成错误: {str(e)}")
+    exit(1)
 EOF
 }
 
