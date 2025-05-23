@@ -28,12 +28,12 @@ from jupyter_server.auth import passwd
 import json
 import os
 
-password_hash = passwd('Jupyter@2024')  # 设置您的密码
+password_hash = passwd('ju2024')  # 设置您的密码
 config = {
     "ServerApp": {
         "password": password_hash,
         "ip": "*",
-        "port": 8888,
+        "port": 8899,
         "open_browser": False,
         "root_dir": "$HOME/jupyter_workspace",
         "allow_remote_access": True
