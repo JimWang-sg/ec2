@@ -1,6 +1,6 @@
 #!/bin/bash
 # Jupyter Lab 远程部署脚本 v3.1
-# 适配 Ubuntu 24.04 LTS | 端口 8899 | 密码 Jupyter@2024
+# 适配 Ubuntu 24.04 LTS | 端口 8899 | 密码 ju2024
 # 生成日期：2025-05-23
 
 set -eo pipefail
