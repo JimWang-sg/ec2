@@ -107,7 +107,7 @@ show_menu() {
     echo "2) 生成 requirements.txt"
     echo "3) 从 requirements.txt 安装"
     echo "0) 退出"
-    echo -n "请输入选项数字: ${NC}"
+    echo -en "${GREEN}请输入选项数字: ${NC}"  # 关键修复：使用 -en 并前置颜色代码
 }
 
 main() {
