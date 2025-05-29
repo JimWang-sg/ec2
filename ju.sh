@@ -1,11 +1,10 @@
 #!/bin/bash
-# Jupyter Lab 远程部署脚本 v5.4.2修改版
-# 移除所有防火墙配置操作 | 发布日期：2025-05-24
-# 新增：安装Python常用数据科学库 | 发布日期：2025-05-29
+Jupyter Lab 远程部署脚本 v5.4.1修改版
+移除所有防火墙配置操作 | 发布日期：2025-05-24
 
 set -eo pipefail
 
-# 配置常量
+配置常量
 VENV_PATH="$HOME/jupyter_venv"
 CONFIG_DIR="$HOME/.jupyter"
 CONFIG_JSON="$CONFIG_DIR/jupyter_server_config.json"
@@ -14,11 +13,11 @@ SERVICE_FILE="/etc/systemd/system/jupyter.service"
 DEFAULT_PORT=8899
 DEFAULT_PASS="jupyter24"
 
-# 颜色定义
+颜色定义
 RED='\033[31m'; GREEN='\033[32m'; YELLOW='\033[33m'
 BLUE='\033[34m'; NC='\033[0m'
 
-# 显示菜单
+显示菜单
 show_menu() {
     clear
     echo -e "${GREEN}Jupyter Lab 管理菜单${NC}"
@@ -32,7 +31,7 @@ show_menu() {
     echo "--------------------------------"
 }
 
-# 输入验证（修复版）
+输入验证（修复版）
 get_valid_input() {
     local prompt=$1
     local default=$2
@@ -66,14 +65,14 @@ get_valid_input() {
     echo "$value"
 }
 
-# 端口验证
+端口验证
 validate_port() {
     [[ "$1" =~ ^[0-9]+$ ]] && [ $1 -ge 1 -a $1 -le 65535 ] && return 0
     echo -e "${RED}错误：端口必须为1-65535之间的数字${NC}" >&2
     return 1
 }
 
-# 密码验证（增强版）
+密码验证（增强版）
 validate_pass() {
     if [ -z "$1" ]; then
         echo -e "${RED}错误：密码不能为空${NC}" >&2
@@ -85,7 +84,7 @@ validate_pass() {
     return 0
 }
 
-# 生成配置文件
+生成配置文件
 generate_config() {
     local port=$1
     local password=$2
@@ -114,7 +113,7 @@ with open("$CONFIG_JSON", "w") as f:
 EOF
 }
 
-# 安装流程（移除了防火墙配置）
+安装流程（移除了防火墙配置）
 install_jupyter() {
     echo -e "\n${GREEN}>>> 开始安装流程${NC}"
     
@@ -128,21 +127,6 @@ install_jupyter() {
     echo -e "${BLUE}创建Python虚拟环境...${NC}"
     python3.12 -m venv "$VENV_PATH"
     source "$VENV_PATH/bin/activate"
-
-    echo -e "${BLUE}安装核心组件及全量功能包...${NC}"
-    pip install --upgrade pip wheel setuptools
-
-    pip install \
-        pandas numpy scipy `# 核心数据处理` \
-        akshare mplfinance ta-lib pandas-datareader `# 金融分析` \
-        matplotlib seaborn plotly bokeh `# 可视化` \
-        requests httpx websockets aiohttp `# 网络请求` \
-        asyncio uvloop `# 异步编程` \
-        jupyterlab jupyterlab-language-pack-zh-CN ipython pyzmq `# Jupyter生态` \
-        sqlalchemy psycopg2-binary pymysql `# 数据库` \
-        scikit-learn xgboost lightgbm catboost tensorflow pytorch torchvision `# 机器学习` \
-        openpyxl xlrd python-docx pdfplumber `# 文档处理` \
-        tqdm loguru python-dotenv beautifulsoup4 pillow pytest flake8 autopep8 `# 实用工具`
     
     echo -e "${BLUE}安装核心组件...${NC}"
     pip install --upgrade pip wheel setuptools
@@ -184,7 +168,7 @@ EOL
     show_access_info
 }
 
-# 卸载流程（移除了防火墙清理）
+卸载流程（移除了防火墙清理）
 uninstall_jupyter() {
     echo -e "\n${YELLOW}>>> 开始卸载流程${NC}"
     
@@ -203,7 +187,7 @@ uninstall_jupyter() {
     echo -e "${GREEN}✔ 卸载完成${NC}"
 }
 
-# 修改配置（移除了防火墙更新）
+修改配置（移除了防火墙更新）
 modify_config() {
     echo -e "\n${GREEN}>>> 修改配置参数${NC}"
     source "$VENV_PATH/bin/activate"
@@ -261,7 +245,7 @@ show_access_info() {
     fi
 }
 
-# 主循环
+主循环
 while true; do
     show_menu
     read -p "请输入操作编号 (0-5): " choice
@@ -275,4 +259,4 @@ while true; do
         *) echo -e "${RED}无效的选项，请重新输入${NC}" ;;
     esac
     read -n 1 -s -r -p "按任意键返回菜单..."
-done
+done    
