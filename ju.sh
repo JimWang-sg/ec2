@@ -127,6 +127,13 @@ install_jupyter() {
     echo -e "${BLUE}创建Python虚拟环境...${NC}"
     python3.12 -m venv "$VENV_PATH"
     source "$VENV_PATH/bin/activate"
+
+    echo -e "${BLUE}安装核心组件及数据科学库...${NC}"
+    pip install --upgrade pip wheel setuptools
+    pip install jupyterlab notebook jupyter-server \
+        numpy pandas matplotlib seaborn scikit-learn \
+        requests plotly scipy statsmodels sympy \
+        openpyxl xlrd lxml sqlalchemy
     
     echo -e "${BLUE}安装核心组件...${NC}"
     pip install --upgrade pip wheel setuptools
