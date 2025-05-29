@@ -131,27 +131,18 @@ install_jupyter() {
 
     echo -e "${BLUE}安装核心组件及全量功能包...${NC}"
     pip install --upgrade pip wheel setuptools
+
     pip install \
-        # 核心数据处理
-        pandas numpy scipy \
-        # 金融分析
-        akshare mplfinance ta-lib pandas-datareader \
-        # 可视化
-        matplotlib seaborn plotly bokeh \
-        # 网络请求
-        requests httpx websockets aiohttp \
-        # 异步编程
-        asyncio uvloop \
-        # Jupyter生态
-        jupyterlab jupyterlab-language-pack-zh-CN ipython pyzmq \
-        # 数据库
-        sqlalchemy psycopg2-binary pymysql \
-        # 机器学习
-        scikit-learn xgboost lightgbm catboost tensorflow pytorch torchvision \
-        # 文档处理
-        openpyxl xlrd python-docx pdfplumber \
-        # 实用工具
-        tqdm loguru python-dotenv beautifulsoup4 pillow pytest flake8 autopep8
+        pandas numpy scipy `# 核心数据处理` \
+        akshare mplfinance ta-lib pandas-datareader `# 金融分析` \
+        matplotlib seaborn plotly bokeh `# 可视化` \
+        requests httpx websockets aiohttp `# 网络请求` \
+        asyncio uvloop `# 异步编程` \
+        jupyterlab jupyterlab-language-pack-zh-CN ipython pyzmq `# Jupyter生态` \
+        sqlalchemy psycopg2-binary pymysql `# 数据库` \
+        scikit-learn xgboost lightgbm catboost tensorflow pytorch torchvision `# 机器学习` \
+        openpyxl xlrd python-docx pdfplumber `# 文档处理` \
+        tqdm loguru python-dotenv beautifulsoup4 pillow pytest flake8 autopep8 `# 实用工具`
     
     echo -e "${BLUE}安装核心组件...${NC}"
     pip install --upgrade pip wheel setuptools
