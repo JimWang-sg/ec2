@@ -128,12 +128,29 @@ install_jupyter() {
     python3.12 -m venv "$VENV_PATH"
     source "$VENV_PATH/bin/activate"
 
-    echo -e "${BLUE}安装核心组件及数据科学库...${NC}"
+    echo -e "${BLUE}安装核心组件及全量功能包...${NC}"
     pip install --upgrade pip wheel setuptools
-    pip install jupyterlab notebook jupyter-server \
-        numpy pandas matplotlib seaborn scikit-learn \
-        requests plotly scipy statsmodels sympy \
-        openpyxl xlrd lxml sqlalchemy
+    pip install \
+        # 核心数据处理
+        pandas numpy scipy \
+        # 金融分析
+        akshare mplfinance ta-lib pandas-datareader \
+        # 可视化
+        matplotlib seaborn plotly bokeh \
+        # 网络请求
+        requests httpx websockets aiohttp \
+        # 异步编程
+        asyncio uvloop \
+        # Jupyter生态
+        jupyterlab jupyterlab-language-pack-zh-CN ipython pyzmq \
+        # 数据库
+        sqlalchemy psycopg2-binary pymysql \
+        # 机器学习
+        scikit-learn xgboost lightgbm catboost tensorflow pytorch torchvision \
+        # 文档处理
+        openpyxl xlrd python-docx pdfplumber \
+        # 实用工具
+        tqdm loguru python-dotenv beautifulsoup4 pillow pytest flake8 autopep8
     
     echo -e "${BLUE}安装核心组件...${NC}"
     pip install --upgrade pip wheel setuptools
