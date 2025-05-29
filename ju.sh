@@ -1,6 +1,7 @@
 #!/bin/bash
-# Jupyter Lab 远程部署脚本 v5.4.1修改版
+# Jupyter Lab 远程部署脚本 v5.4.2修改版
 # 移除所有防火墙配置操作 | 发布日期：2025-05-24
+# 新增：安装Python常用数据科学库 | 发布日期：2025-05-29
 
 set -eo pipefail
 
